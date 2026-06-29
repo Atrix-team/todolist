@@ -1,65 +1,123 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+
+const Page = () => {
+  const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
+  const [mainTask, setMainTask] = useState([]);
+
+
+  const fetchTodos = async () => {
+    try {
+      const res = await fetch("/api/todos");
+      const data = await res.json();
+      setMainTask(data);
+    } catch (error) {
+      console.log("Error fetching todos:", error);
+    }
+  };
+
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
+    if (!title || !desc) return;
+
+    try {
+      await fetch("/api/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          desc,
+        }),
+      });
+
+      setTitle("");
+      setDesc("");
+
+      fetchTodos(); // refresh list
+    } catch (error) {
+      console.log("Error adding todo:", error);
+    }
+  };
+
+
+
+  const deleteHandler = async (id) => {
+    await fetch(`/api/todos?id=${id}`, {
+      method: "DELETE",
+    });
+
+    fetchTodos();
+  };
+
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div>
+      <h1 className="text-center bg-blue-300 text-6xl p-7 font-bold">
+        Todo App
+      </h1>
+
+      {/* FORM */}
+      <form className="text-center" onSubmit={submitHandler}>
+        <input
+          type="text"
+          placeholder="Enter Task Here"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border-2 m-7 p-2"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <input
+          type="text"
+          placeholder="Enter Description Here"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          className="border-2 m-7 p-2"
+        />
+
+        <button className="bg-black text-white p-2.5">Add Task</button>
+      </form>
+
+      <hr />
+
+      {/* TASK LIST */}
+      <div className="p-8 bg-slate-100 text-center">
+        <ul>
+          {mainTask.length === 0 ? (
+            <h2>No Task Available</h2>
+          ) : (
+            mainTask.map((t, i) => (
+              <li
+                key={t._id || i}
+                className="flex items-center justify-between mb-4"
+              >
+                <div className="flex justify-between w-6xl">
+                  <h5 className="text-2xl font-semibold">TITLE: {t.title}</h5>
+
+                  <h6 className="text-xl font-semibold">DESC: {t.desc}</h6>
+
+                  <button
+                    onClick={() => deleteHandler(t._id)}
+                    className="bg-red-400 text-white px-4 py-2 rounded cursor-pointer">
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
     </div>
   );
-}
+};
+
+export default Page;
