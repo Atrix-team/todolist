@@ -7,7 +7,7 @@ export async function GET() {
   try {
     await connectDB();
     const todos = await Todo.find();
-    return NextResponse.json(todos);
+    return NextResponse.json(todos || []);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch todos" },

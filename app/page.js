@@ -8,15 +8,21 @@ const Page = () => {
   const [mainTask, setMainTask] = useState([]);
 
 
-  const fetchTodos = async () => {
-    try {
-      const res = await fetch("/api/todos");
-      const data = await res.json();
+const fetchTodos = async () => {
+  try {
+    const res = await fetch("/api/todos");
+    const data = await res.json();
+
+    if (Array.isArray(data)) {
       setMainTask(data);
-    } catch (error) {
-      console.log("Error fetching todos:", error);
+    } else {
+      setMainTask([]);
     }
-  };
+  } catch (error) {
+    console.log("Error fetching todos:", error);
+    setMainTask([]);
+  }
+};
 
 
   const submitHandler = async (e) => {
@@ -95,7 +101,7 @@ const Page = () => {
           {mainTask.length === 0 ? (
             <h2>No Task Available</h2>
           ) : (
-            mainTask.map((t, i) => (
+            (Array.isArray(mainTask) ? mainTask : []).map((t, i) => (
               <li
                 key={t._id || i}
                 className="flex items-center justify-between mb-4"
