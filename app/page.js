@@ -90,7 +90,7 @@ const fetchTodos = async () => {
           className="border-2 m-7 p-2"
         />
 
-        <button className="bg-black text-white p-2.5">Add Task</button>
+        <button className="bg-black text-white p-2.5 cursor-pointer">Add Task</button>
       </form>
 
       <hr />
